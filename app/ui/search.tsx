@@ -1,7 +1,7 @@
 'use client';
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams, usePathname,useRouter } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 
 export default function Search({ placeholder }: { placeholder: string }) {
@@ -9,20 +9,24 @@ export default function Search({ placeholder }: { placeholder: string }) {
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  function handleSearch(term: string) {
-    const handleSearch = useDebouncedCallback((term) => {
-
+  // Definizione della funzione debounced
+  const debouncedSearch = useDebouncedCallback((term: string) => {
     console.log(`Searching... ${term}`);
 
     const params = new URLSearchParams(searchParams);
+    params.set('page', '1');
     if (term) {
       params.set('query', term);
     } else {
       params.delete('query');
     }
     replace(`${pathname}?${params.toString()}`);
-  }, 300);
-}
+  }, 300); // 300ms di debounce
+
+  // La funzione handleSearch è semplicemente un wrapper per debouncedSearch
+  function handleSearch(term: string) {
+    debouncedSearch(term);
+  }
 
   return (
     <div className="relative flex flex-1 flex-shrink-0">
@@ -33,7 +37,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
         placeholder={placeholder}
         onChange={(e) => {
-          handleSearch(e.target.value);
+          handleSearch(e.target.value); // Usa la funzione handleSearch che chiama debouncedSearch
         }}
         defaultValue={searchParams.get('query')?.toString()}
       />
